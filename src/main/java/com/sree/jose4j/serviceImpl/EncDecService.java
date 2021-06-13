@@ -68,11 +68,11 @@ public class EncDecService {
         return jwe.getCompactSerialization();
 	}
 
-	public String sendIBRequest(String payload) throws JoseException {
-	//public OCSReqResDTO sendIBRequest(String payload) throws JoseException {
+	//public String sendIBRequest(String payload) throws JoseException {
+	public OCSReqResDTO sendIBRequest(String payload) throws JoseException {
 		
-		//JsonWebKey jwk1 = JsonWebKey.Factory.newJwk(LoadOCSMWKeys.ocs_privateKey);
-		JsonWebKey jwk1 = JsonWebKey.Factory.newJwk(LoadIBOCSKeys.ib_privateKey);
+		JsonWebKey jwk1 = JsonWebKey.Factory.newJwk(LoadOCSMWKeys.ocs_privateKey);
+		//JsonWebKey jwk1 = JsonWebKey.Factory.newJwk(LoadIBOCSKeys.ib_privateKey);
 		JsonWebSignature jws = new JsonWebSignature();
 		jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA512);
         jws.setPayload(payload);
@@ -80,8 +80,8 @@ public class EncDecService {
         jws.sign();
         
         
-        //JsonWebKey jwk = JsonWebKey.Factory.newJwk(LoadOCSMWKeys.mw_publicKey);
-        JsonWebKey jwk = JsonWebKey.Factory.newJwk(LoadIBOCSKeys.ocs_publicKey);
+        JsonWebKey jwk = JsonWebKey.Factory.newJwk(LoadOCSMWKeys.mw_publicKey);
+        //JsonWebKey jwk = JsonWebKey.Factory.newJwk(LoadIBOCSKeys.ocs_publicKey);
         JsonWebEncryption jwe = new JsonWebEncryption();
         jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.RSA_OAEP_256);
         jwe.setEncryptionMethodHeaderParameter(ContentEncryptionAlgorithmIdentifiers.AES_256_CBC_HMAC_SHA_512);
@@ -89,32 +89,29 @@ public class EncDecService {
         jwe.setPayload(jws.getCompactSerialization());
         
         System.out.println(jwe.getCompactSerialization());
-		//return getOCSReqResFormat(jwe.getCompactSerialization());
-        return jwe.getCompactSerialization();
+		return getOCSReqResFormat(jwe.getCompactSerialization());
+        //return jwe.getCompactSerialization();
 	}
 
 	public String processOCSResponse(String payload) throws JoseException {
+		
 		JsonWebEncryption jwe = new JsonWebEncryption();
-		JsonWebKey jwk = JsonWebKey.Factory.newJwk(LoadIBOCSKeys.ib_privateKey);
-		//JsonWebKey jwk = JsonWebKey.Factory.newJwk(LoadOCSMWKeys.ocs_privateKey);
+		//JsonWebKey jwk = JsonWebKey.Factory.newJwk(LoadIBOCSKeys.ocs_privateKey);
+		JsonWebKey jwk = JsonWebKey.Factory.newJwk(LoadOCSMWKeys.ocs_privateKey);
         jwe.setCompactSerialization(payload);
         jwe.setKey(jwk.getKey());
         
         String payloadOut = jwe.getPayload();
 		
-        JsonWebKey jwk1 = JsonWebKey.Factory.newJwk(LoadIBOCSKeys.ocs_publicKey);
-        //JsonWebKey jwk1 = JsonWebKey.Factory.newJwk(LoadOCSMWKeys.mw_publicKey);
+        //JsonWebKey jwk1 = JsonWebKey.Factory.newJwk(LoadIBOCSKeys.ocs_publicKey);
+        JsonWebKey jwk1 = JsonWebKey.Factory.newJwk(LoadOCSMWKeys.mw_publicKey);
         JsonWebSignature jws = new JsonWebSignature();
-        jws.setDoKeyValidation(false);
+        jws.setDoKeyValidation(true);
+        jws.setKey(jwk1.getKey());
         jws.setCompactSerialization(payloadOut);
         //jws.setKey(LoadOCSMWKeys.mw_publicKey);
-        jws.setKey(jwk1.getKey());
-        
-        
-        if(jws.verifySignature()) {
-        	return jws.getPayload();
-        }
-        return null;
+        String rawData = jws.getHeaders().getFullHeaderAsJsonString();
+        return rawData;
 	}
 	
 	public OCSReqResDTO getOCSReqResFormat(String jweStr){

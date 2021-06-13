@@ -32,15 +32,17 @@ public class EncDecController {
 	
 	//SENDING IB REQUEST TO OCS
 	@PostMapping(value="/ib-send-req")
-	//public OCSReqResDTO sendIBRequest(@RequestBody String req) throws JoseException {
-	public String sendIBRequest(@RequestBody String req) throws JoseException {
+	public OCSReqResDTO sendIBRequest(@RequestBody String req) throws JoseException {
+	//public String sendIBRequest(@RequestBody String req) throws JoseException {
 		return service.sendIBRequest(req);
 	}
 	
 	//IB PROCESS RECIEVED RESPONSE FROM OCS
 	@PostMapping(value="/ib-process-res")
-	public String processOCSResponse(@RequestBody String res) throws JoseException {
-		return service.processOCSResponse(res);
+	public String processOCSResponse(@RequestBody OCSReqResDTO res) throws JoseException {
+	//public String processOCSResponse(@RequestBody String res) throws JoseException {
+		//return service.processOCSResponse(res);
+		return service.processOCSResponse(res.toString());
 	}
 	
 }
